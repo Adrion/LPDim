@@ -1,0 +1,10 @@
+{
+    "name": "Framework DIM",
+    "description": "PHP Web Framework",
+    "licence": "MIT",
+    "autoload": {
+        "psr-0": {
+            "Framework\\": "src/"
+        }
+    }
+}

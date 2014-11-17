@@ -1,1 +1,6 @@
 /.idea
+/vendor
+/composer.phar
+/phpunit.phar
+/coverage
+/clover.xml
