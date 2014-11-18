@@ -1,14 +1,15 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: dev
- * Date: 18/11/14
- * Time: 15:10
- */
 
 namespace Application\Controller;
 
 
-class HelloController {
+use Framework\Http\Request;
+use Framework\Http\Response;
 
+class HelloController
+{
+    public function helloAction(Request $request)
+    {
+        return new Response('Hello World',200,[],'HTTP','1.1');
+    }
 } 

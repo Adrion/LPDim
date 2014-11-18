@@ -2,14 +2,35 @@
 
 namespace Framework\Http;
 
-class Request
+use Framework\Http\Exception\MalformedHttpMessageException;
+
+class Request extends AbstractMessage
 {
+    /**
+     * List of all RFC2616 compliant HTTP verbs.
+     *
+     * The list can be expanded to non standard
+     * HTTP verbs such as LINK and UNLINK for
+     * RESTful web services or PURGE for reverse
+     * proxy caches like Varnish.
+     *
+     * @see Request::registerSupportedVerbs
+     * @var array
+     */
+    private static $verbs = [
+        'GET',
+        'HEAD',
+        'POST',
+        'PUT',
+        'PATCH',
+        'TRACE',
+        'OPTIONS',
+        'CONNECT',
+        'PATCH',
+    ];
+
     private $method;
     private $path;
-    private $scheme;
-    private $version;
-    private $headers;
-    private $body;
 
     public function __construct($method, $path, $scheme, $version, array $headers = [], $body = '')
     {
@@ -21,48 +42,65 @@ class Request
         $this->body = $body;
     }
 
+    public static function registerSupportedVerbs(array $verbs)
+    {
+        foreach ($verbs as $verb) {
+            self::$verbs[] = strtoupper($verb);
+        }
+    }
+
     public static function createFromMessage($message)
     {
         $lines = explode("\n", $message);
-        $pattern = '`^(?P<method>[A-Z]+) (?P<path>\S+) (?P<scheme> HTTPS?)\/(?P<version>1\.[0-1])$`i';
 
-        preg_match($pattern, $lines[0], $matches);
+        $pattern = '`^([A-Z]+) (\S+) (HTTPS?)\/(1\.[0-1])$`i';
 
-        return new self('a','a','a','a');
+        if(!preg_match($pattern, $lines[0], $matches)){
+            /* \ correspond au namespace global, afin d'acceder au Exception natif de php et non une instance du namespace local*/
+            throw new MalformedHttpMessageException(sprintf(
+                'Request "%s" line must fetch regular expression: "%s"',
+                $message,
+                $pattern
+            ));
+        }
+
+        list(, $method, $path, $scheme, $version) = $matches;
+
+        $blankLineIndex = null;
+        $nbLines = count($lines);
+        $headers = [];
+        for ($i = 1; $i < $nbLines; $i++) {
+            if (empty($lines[$i])) {
+                $blankLineIndex = $i;
+                break;
+            }
+
+            list($name, $value) = explode(': ', $lines[$i]);
+
+            $headers[$name] = $value;
+        }
+
+        $content = [];
+        if ($blankLineIndex) {
+            for ($i = $blankLineIndex + 1; $i < $nbLines; $i++) {
+                $content[] = $lines[$i];
+            }
+        }
+
+        $body = implode("\n", $content);
+
+        return new self($method, $path, $scheme, $version, $headers, $body);
     }
 
-    public function getMessage()
+    public function createHeadersPrologue()
     {
-        $message = sprintf(
+        return sprintf(
             '%s %s %s/%s',
             $this->getMethod(),
             $this->getPath(),
             $this->getScheme(),
             $this->getVersion()
         );
-        $message.= "\n";
-        foreach ($this->getHeaders() as $name => $value) {
-            $message.= sprintf('%s: %s', $name, $value);
-            $message.= "\n";
-        }
-
-        $message = rtrim($message);
-        if ($body = $this->getBody()) {
-            $message.= "\n\n";
-            $message.= $body;
-        }
-
-        return $message;
-    }
-
-    public function getBody()
-    {
-        return $this->body;
-    }
-
-    public function getHeaders()
-    {
-        return $this->headers;
     }
 
     public function getMethod()
@@ -75,13 +113,4 @@ class Request
         return $this->path;
     }
 
-    public function getScheme()
-    {
-        return $this->scheme;
-    }
-
-    public function getVersion()
-    {
-        return $this->version;
-    }
 }

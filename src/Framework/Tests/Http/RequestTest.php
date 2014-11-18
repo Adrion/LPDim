@@ -6,6 +6,12 @@ use Framework\Http\Request;
 
 class RequestTest extends \PHPUnit_Framework_TestCase
 {
+    /** @expectedException \Exception */
+    public function testRejectMalformedHttpMessage()
+    {
+        Request::createFromMessage('PURGE /foo FTP/2.1');
+    }
+
     public function testCreateHttpRequestFromHttpMessage()
     {
         $message = 'POST /contact HTTPS/1.1'."\n";

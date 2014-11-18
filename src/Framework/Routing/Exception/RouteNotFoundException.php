@@ -6,9 +6,10 @@
  * Time: 16:07
  */
 
-namespace Framework\Routing\Execption;
+namespace Framework\Routing\Exception;
 
 
-class RouteNotFoundException {
+class RouteNotFoundException extends \RuntimeException
+{
 
 } 
