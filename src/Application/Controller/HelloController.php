@@ -1,15 +1,18 @@
 <?php
-
 namespace Application\Controller;
-
-
 use Framework\Http\Request;
-use Framework\Http\Response;
-
+use Framework\Templating\TemplateEngine;
 class HelloController
 {
+    private $templating;
+    public function __construct(TemplateEngine $templating)
+    {
+        $this->templating = $templating;
+    }
     public function helloAction(Request $request)
     {
-        return new Response('Hello World',200,[],'HTTP','1.1');
+        return $this->templating->createViewResponse($request, 'hello.twig', [
+            'name' => 'World',
+        ]);
     }
-} 
+}

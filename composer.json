@@ -2,9 +2,12 @@
     "name": "Framework DIM",
     "description": "PHP Web Framework",
     "licence": "MIT",
+    "require":{
+        "twig/twig": "~1.16"
+    },
     "autoload": {
         "psr-0": {
-            "Framework\\": "src/"
+            "": "src/"
         }
     }
 }

@@ -2,10 +2,22 @@
 
 namespace Framework\Tests\Http;
 
+use Framework\Http\Request;
 use Framework\Http\Response;
 
 class ResponseTest extends \PHPUnit_Framework_TestCase
 {
+    public function testCreateHttpResponseFromRequest()
+    {
+        $request = new Request('GET', '/demo', 'HTTP', '1.1');
+        $response = Response::createFromRequest($request, 'Foo bar');
+
+        $this->assertSame('Foo bar', $response->getBody());
+        $this->assertSame(200, $response->getStatusCode());
+        $this->assertSame('HTTP', $response->getScheme());
+        $this->assertSame('1.1', $response->getVersion());
+    }
+
     public function testCreateHttpResponse()
     {
         $message = 'HTTP/1.1 200 OK'."\n";

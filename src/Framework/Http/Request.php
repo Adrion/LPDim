@@ -49,6 +49,31 @@ class Request extends AbstractMessage
         }
     }
 
+    public static function createFromGlobals()
+    {
+        $path = isset($_SERVER['PATH_INFO']) ? $_SERVER['PATH_INFO'] : '/';
+        $method = isset($_SERVER['REQUEST_METHOD']) ? $_SERVER['REQUEST_METHOD'] : 'GET';
+
+        list($scheme,$version) = explode('/', $_SERVER['SERVER_PROTOCOL']);
+
+        $header = [];
+        foreach ($_SERVER as $key => $value) {
+            if ('HTTP_' !== substr($key, 0, 5)){
+                continue;
+            }
+
+            $name = substr($key, 5);              // USER_AGENT
+            $name = strtolower($name);            // user_agent
+            $name = str_replace('_', ' ', $name); // user agent
+            $name = ucwords($name);               // User Agent
+            $name = str_replace(' ', '-', $name); // User-Agent
+
+            $header[$name] = $value;
+        }
+
+        return new self($method, $path, $scheme, $version, $header);
+    }
+
     public static function createFromMessage($message)
     {
         $lines = explode("\n", $message);

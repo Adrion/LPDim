@@ -12,6 +12,23 @@ class RequestTest extends \PHPUnit_Framework_TestCase
         Request::createFromMessage('PURGE /foo FTP/2.1');
     }
 
+    public function testCreateFromGlobals()
+    {
+        $_SERVER['PATH_INFO'] = '/hello';
+        $_SERVER['REQUEST_METHOD'] = 'GET';
+        $_SERVER['SERVER_PROTOCOL'] = 'HTTP/1.1';
+        $_SERVER['HTTP_HOST'] = 'www.foo.bar';
+        $_SERVER['HTTP_USER_AGENT'] = 'Firefox';
+
+        $request = Request::createFromGlobals();
+
+        $this->assertSame('GET', $request->getMethod());
+        $this->assertSame('/hello', $request->getPath());
+        $this->assertSame('HTTP', $request->getScheme());
+        $this->assertSame('1.1', $request->getVersion());
+        $this->assertCount(2, $request->getHeaders());
+    }
+
     public function testCreateHttpRequestFromHttpMessage()
     {
         $message = 'POST /contact HTTPS/1.1'."\n";

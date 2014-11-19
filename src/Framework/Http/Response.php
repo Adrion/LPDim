@@ -22,6 +22,11 @@ class Response extends AbstractMessage
         $this->version = $version;
     }
 
+    public static function createFromRequest(Request $request, $body = '', $statusCode = 200, array $headers = [])
+    {
+        return new self($body, $statusCode, $headers, $request->getScheme(), $request->getVersion());
+    }
+
     public static function createFromMessage($message)
     {
         $lines = explode("\n", $message);
@@ -92,6 +97,14 @@ class Response extends AbstractMessage
             $this->getStatusCode(),
             $this->getReasonPhrase()
         );
+    }
+
+    public function send()
+    {
+        foreach($this->headers as $name => $value){
+            header(sprintf('%s: %s', $name, $value));
+        }
+        echo $this->body;
     }
 
 }
